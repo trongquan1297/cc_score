@@ -1,12 +1,11 @@
 package main
 
 import (
+	"cc_score/pkg/config"
+	"cc_score/pkg/database"
+	"cc_score/pkg/scoreboard"
 	"fmt"
 	"net/http"
-
-	"github.com/trongquan1297/cc_score/config"
-	"github.com/trongquan1297/cc_score/database"
-	"github.com/trongquan1297/cc_score/scoreboard"
 )
 
 func main() {

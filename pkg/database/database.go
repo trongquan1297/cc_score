@@ -1,11 +1,10 @@
 package database
 
 import (
+	"cc_score/pkg/config"
 	"fmt"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"github.com/your-username/your-project-name/config"
 )
 
 // ConnectDB connects to the MySQL database using configuration.
