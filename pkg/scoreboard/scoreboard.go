@@ -53,36 +53,53 @@ func (sb *ScoreBoard) GetHighestScore() (Player, error) {
 }
 
 // AddScoreHandler handles the API endpoint for adding score.
-func (sb *ScoreBoard) AddScoreHandler(w http.ResponseWriter, r *http.Request) {
-	var newPlayer Player
-	err := json.NewDecoder(r.Body).Decode(&newPlayer)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+func PostAddScoreHandler(sb *ScoreBoard) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
 
-	err = sb.AddPlayer(newPlayer)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		var newPlayer Player
+		err := json.NewDecoder(r.Body).Decode(&newPlayer)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-	w.WriteHeader(http.StatusCreated)
+		err = sb.AddPlayer(newPlayer)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response := map[string]string{"message": "Score added successfully"}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(response)
+	}
 }
 
 // GetHighestScoreHandler handles the API endpoint for getting the highest score.
-func (sb *ScoreBoard) GetHighestScoreHandler(w http.ResponseWriter, r *http.Request) {
-	highestScorePlayer, err := sb.GetHighestScore()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+func GetHighestScoreHandler(sb *ScoreBoard) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
 
-	if highestScorePlayer.ID == "" {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
+		highestScorePlayer, err := sb.GetHighestScore()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(highestScorePlayer)
+		if highestScorePlayer.ID == "" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(highestScorePlayer)
+	}
 }

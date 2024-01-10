@@ -4,6 +4,7 @@ import (
 	"cc_score/pkg/config"
 	"cc_score/pkg/database"
 	"cc_score/pkg/scoreboard"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -24,8 +25,14 @@ func main() {
 
 	scoreBoard := scoreboard.NewScoreBoard(db)
 
-	http.HandleFunc("/addScore", scoreBoard.AddScoreHandler)
-	http.HandleFunc("/getHighestScore", scoreBoard.GetHighestScoreHandler)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		message := map[string]string{"welcome": "Welcome to the Scoreboard API!"}
+		json.NewEncoder(w).Encode(message)
+	})
+
+	http.HandleFunc("/addScore", scoreboard.PostAddScoreHandler(scoreBoard))
+	http.HandleFunc("/getHighestScore", scoreboard.GetHighestScoreHandler(scoreBoard))
 
 	fmt.Println("Server is running on :8080")
 	http.ListenAndServe(":8080", nil)
