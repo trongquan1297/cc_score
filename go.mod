@@ -8,4 +8,5 @@ require (
 require (
     github.com/jmoiron/sqlx v1.3.5 // indirect
     github.com/go-sql-driver/mysql v1.7.0 // indirect
+    gopkg.in/yaml.v2 v2.4.0
 )

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/trongquan1297/cc_score/config/config"
-	"github.com/trongquan1297/cc_score/config/database"
+	"github.com/trongquan1297/cc_score/pkg/config"
+	"github.com/trongquan1297/cc_score/pkg/database"
 	"github.com/trongquan1297/cc_score/pkg/scoreboard"
 )
 
