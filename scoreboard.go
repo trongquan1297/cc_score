@@ -1,4 +1,4 @@
-package main
+package scoreboard
 
 import (
 	"database/sql"
@@ -9,23 +9,27 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// Player struct represents the player information.
 type Player struct {
 	ID    string `json:"id" db:"id"`
 	Name  string `json:"name" db:"name"`
 	Score int    `json:"score" db:"score"`
 }
 
+// ScoreBoard struct represents the scoreboard.
 type ScoreBoard struct {
 	mu sync.Mutex
 	db *sqlx.DB
 }
 
+// NewScoreBoard creates a new ScoreBoard instance.
 func NewScoreBoard(db *sqlx.DB) *ScoreBoard {
 	return &ScoreBoard{
 		db: db,
 	}
 }
 
+// AddPlayer adds a new player to the scoreboard.
 func (sb *ScoreBoard) AddPlayer(player Player) error {
 	sb.mu.Lock()
 	defer sb.mu.Unlock()
@@ -34,6 +38,7 @@ func (sb *ScoreBoard) AddPlayer(player Player) error {
 	return err
 }
 
+// GetHighestScore returns the player with the highest score.
 func (sb *ScoreBoard) GetHighestScore() (Player, error) {
 	sb.mu.Lock()
 	defer sb.mu.Unlock()
@@ -47,6 +52,7 @@ func (sb *ScoreBoard) GetHighestScore() (Player, error) {
 	return highestScorePlayer, err
 }
 
+// AddScoreHandler handles the API endpoint for adding score.
 func (sb *ScoreBoard) AddScoreHandler(w http.ResponseWriter, r *http.Request) {
 	var newPlayer Player
 	err := json.NewDecoder(r.Body).Decode(&newPlayer)
@@ -64,6 +70,7 @@ func (sb *ScoreBoard) AddScoreHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// GetHighestScoreHandler handles the API endpoint for getting the highest score.
 func (sb *ScoreBoard) GetHighestScoreHandler(w http.ResponseWriter, r *http.Request) {
 	highestScorePlayer, err := sb.GetHighestScore()
 	if err != nil {

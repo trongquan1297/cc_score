@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/trongquan1297/cc_score/pkg/config"
-	"github.com/trongquan1297/cc_score/pkg/database"
-	"github.com/trongquan1297/cc_score/pkg/scoreboard"
+	"github.com/trongquan1297/cc_score/config"
+	"github.com/trongquan1297/cc_score/database"
+	"github.com/trongquan1297/cc_score/scoreboard"
 )
 
 func main() {
