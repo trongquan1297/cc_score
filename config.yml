@@ -1,0 +1,6 @@
+database:
+  username: admin
+  password: admin
+  host: host.docker.internal
+  port: 3306
+  name: cc_score
