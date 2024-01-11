@@ -103,3 +103,35 @@ func GetHighestScoreHandler(sb *ScoreBoard) http.HandlerFunc {
 		json.NewEncoder(w).Encode(highestScorePlayer)
 	}
 }
+
+func (sb *ScoreBoard) GetTopPlayers() ([]Player, error) {
+	sb.mu.Lock()
+	defer sb.mu.Unlock()
+
+	var topPlayers []Player
+	query := `SELECT * FROM players ORDER BY score DESC LIMIT 5`
+	err := sb.db.Select(&topPlayers, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return topPlayers, nil
+}
+
+func (sb *ScoreBoard) GetTopPlayersHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		topPlayers, err := sb.GetTopPlayers()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(topPlayers)
+	}
+}
