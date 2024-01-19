@@ -43,7 +43,7 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		message := map[string]string{"message": "Welcome to the Scoreboard API!"}
+		message := map[string]string{"message": "Scoreboard API!"}
 		json.NewEncoder(w).Encode(message)
 	})
 
