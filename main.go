@@ -4,12 +4,14 @@ import (
 	"cc_score/pkg/config"
 	"cc_score/pkg/database"
 	"cc_score/pkg/scoreboard"
+	"cc_score/pkg/viewer"
 	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
 func main() {
+
 	cfg, err := config.LoadConfig("config.yml")
 	if err != nil {
 		fmt.Println("Error loading config:", err)
@@ -23,7 +25,11 @@ func main() {
 	}
 	defer db.Close()
 
+	viewer := viewer.NewViewer(db)
+
 	scoreBoard := scoreboard.NewScoreBoard(db)
+
+	http.HandleFunc("/viewpost", viewer.ViewPostHandler)
 
 	http.HandleFunc("/getTopPlayers", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -50,6 +56,7 @@ func main() {
 	http.HandleFunc("/addScore", scoreboard.PostAddScoreHandler(scoreBoard))
 	http.HandleFunc("/getHighestScore", scoreboard.GetHighestScoreHandler(scoreBoard))
 	http.HandleFunc("/getTop5Players", scoreBoard.GetTopPlayersHandler())
+	http.HandleFunc("/getpostviews", viewer.GetPostViewsHandler)
 	fmt.Println("Server is running on :8080")
 	http.ListenAndServe(":8080", nil)
 }
