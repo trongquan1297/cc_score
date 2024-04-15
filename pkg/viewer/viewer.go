@@ -103,21 +103,12 @@ func (v *Viewer) GetViewsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (v *Viewer) GetPostViewsHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+	if r.Method != http.MethodGet {
+		http.Error(w, "Only GET method is allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var data struct {
-		ID string `json:"id"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
-		return
-	}
-
-	id := data.ID
+	id := r.URL.Query().Get("id")
 	if id == "" {
 		http.Error(w, "ID parameter is required", http.StatusBadRequest)
 		return
