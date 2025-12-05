@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 func main() {
@@ -29,9 +30,11 @@ func main() {
 
 	scoreBoard := scoreboard.NewScoreBoard(db)
 
-	http.HandleFunc("/viewpost", viewer.ViewPostHandler)
+	mux := http.NewServeMux()
 
-	http.HandleFunc("/getTopPlayers", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/viewpost", viewer.ViewPostHandler)
+
+	mux.HandleFunc("/getTopPlayers", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -47,16 +50,52 @@ func main() {
 		json.NewEncoder(w).Encode(topPlayers)
 	})
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		message := map[string]string{"message": "Scoreboard API!"}
 		json.NewEncoder(w).Encode(message)
 	})
 
-	http.HandleFunc("/addScore", scoreboard.PostAddScoreHandler(scoreBoard))
-	http.HandleFunc("/getHighestScore", scoreboard.GetHighestScoreHandler(scoreBoard))
-	http.HandleFunc("/getTop5Players", scoreBoard.GetTopPlayersHandler())
-	http.HandleFunc("/getpostviews", viewer.GetPostViewsHandler)
+	mux.HandleFunc("/addScore", scoreboard.PostAddScoreHandler(scoreBoard))
+	mux.HandleFunc("/getHighestScore", scoreboard.GetHighestScoreHandler(scoreBoard))
+	mux.HandleFunc("/getTop5Players", scoreBoard.GetTopPlayersHandler())
+	mux.HandleFunc("/getpostviews", viewer.GetPostViewsHandler)
+
 	fmt.Println("Server is running on :8080")
-	http.ListenAndServe(":8080", nil)
+	if err := http.ListenAndServe(":8080", corsMiddleware(mux)); err != nil {
+		fmt.Println("Error starting server:", err)
+	}
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if isAllowedOrigin(origin) {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type,Authorization")
+			w.Header().Set("Vary", "Origin")
+		}
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func isAllowedOrigin(origin string) bool {
+	if origin == "" {
+		return false
+	}
+
+	parsed, err := url.Parse(origin)
+	if err != nil {
+		return false
+	}
+
+	host := parsed.Hostname()
+	return host == "quannguyen.online" || host == "score.quannguyen.online"
 }
